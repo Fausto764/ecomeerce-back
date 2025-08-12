@@ -1,5 +1,39 @@
+# Base de datos SQLite
 *.sqlite3
+*.db
+
+# Variables de entorno
 .env
-__pycache__/
-venv/
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Dependencias de Node.js
 node_modules/
+npm-debug.log
+yarn-error.log
+# package-lock.json  # Descomenta si no quieres versionarlo
+# yarn.lock         # Descomenta si usas Yarn y no quieres versionarlo
+
+# Archivos de compilación
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales
+.DS_Store
+Thumbs.db
+*.bak
+*~
+
+# Pruebas y cobertura
+coverage/
+.nyc_output/
+
+# Configuraciones de editores
+.vscode/
+.idea/
