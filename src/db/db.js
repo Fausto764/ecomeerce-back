@@ -39,5 +39,17 @@ export async function getDBConnection() {
 )
     `
   );
+  await db.exec(`
+CREATE TABLE IF NOT EXISTS products (
+  product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  price REAL NOT NULL,
+  stock INTEGER NOT NULL DEFAULT 0,
+  image_url TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT
+)
+`);
   return db;
 }
