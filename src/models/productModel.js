@@ -24,15 +24,16 @@ export async function createProduct({
   price,
   stock,
   image_url,
+  category_id,
 }) {
   const db = await getDBConnection();
   const result = await db.run(
     ` 
-        INSERT INTO products(name,description,price,stock,image_url)
-        VALUES(?,?,?,?,?)
-        )
+        INSERT INTO products(name,description,price,stock,image_url,category_id)
+        VALUES(?,?,?,?,?,?)
+        
     `,
-    [name, description, price, stock, image_url]
+    [name, description, price, stock, image_url, category_id]
   );
   //   resul.lastID devuelve el id del ultimo elemento insertado es una prop especifica del metodo insert en sqlite3
   return { product_id: result.lastID };
@@ -41,7 +42,7 @@ export async function createProduct({
 //actualizar un producto
 export async function updateProduct(
   product_id,
-  { name, description, price, stock, image_url }
+  { name, description, price, stock, image_url, category_id }
 ) {
   const db = await getDBConnection();
   const result = await db.run(
@@ -52,10 +53,11 @@ export async function updateProduct(
            price = COALESCE(?, price),
            stock = COALESCE(?,stock),
            image_url = COALESCE(?,image_url),
+           category_id = COALESCE(?,category_id),
            updated_at = datetime('now')
            WHERE product_id = ? 
         `,
-    [name, description, price, stock, image_url, product_id]
+    [name, description, price, stock, image_url, category_id, product_id]
   );
   return { changes: result.changes };
 }

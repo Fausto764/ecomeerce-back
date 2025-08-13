@@ -43,13 +43,24 @@ export async function getDBConnection() {
 CREATE TABLE IF NOT EXISTS products (
   product_id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  description TEXT,
+  description TEXT NOT NULL ,
   price REAL NOT NULL,
   stock INTEGER NOT NULL DEFAULT 0,
-  image_url TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT
+  image_url TEXT NOT NULL,
+  category_id INTEGER NOT NULL,
+ created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
 )
 `);
+  await db.exec(`
+  CREATE TABLE IF NOT EXISTS categories (
+    category_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+
   return db;
 }
