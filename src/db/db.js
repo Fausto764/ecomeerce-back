@@ -61,6 +61,27 @@ CREATE TABLE IF NOT EXISTS products (
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   )
 `);
-
+  await db.exec(` 
+  CREATE TABLE IF NOT EXISTS orders (
+  order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  total_amount REAL NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'pending', -- pending, paid, shipped, cancelled
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+  `);
+  await db.exec(` 
+  CREATE TABLE IF NOT EXISTS order_details (
+  order_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id INTEGER NOT NULL,
+  product_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  price REAL NOT NULL,
+  FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+  `);
   return db;
 }

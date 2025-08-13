@@ -12,24 +12,19 @@ import { roleMiddleware } from "../middlewares/roleMiddleware.js";
 
 const router = express.Router();
 
-router.get("/products", handleGetAllProducts);
-router.get("/products/:id", handleGetProductById);
+router.get("/", handleGetAllProducts);
+router.get("/:id", handleGetProductById);
 
 // Solo admin
-router.post(
-  "/products",
-  authMiddleware,
-  roleMiddleware("admin"),
-  handleCreateProduct
-);
+router.post("/", authMiddleware, roleMiddleware("admin"), handleCreateProduct);
 router.put(
-  "/products/:id",
+  "/:id",
   authMiddleware,
   roleMiddleware("admin"),
   handleUpdateProduct
 );
 router.delete(
-  "/products/:id",
+  "/:id",
   authMiddleware,
   roleMiddleware("admin"),
   handleDeleteProduct
