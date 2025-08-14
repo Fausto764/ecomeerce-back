@@ -83,5 +83,36 @@ CREATE TABLE IF NOT EXISTS products (
   FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
   `);
+  await db.exec(` 
+    CREATE TABLE carts (
+    cart_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+    `);
+  await db.exec(` 
+    CREATE TABLE cart_items (
+    cart_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cart_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    FOREIGN KEY (cart_id) REFERENCES carts(cart_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+    `);
+  await db.exec(`
+      CREATE TABLE payments (
+    payment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    payment_method TEXT NOT NULL, -- ejemplo: 'credit_card', 'mercadopago'
+    payment_status TEXT NOT NULL DEFAULT 'pending', -- pending, paid, failed
+    payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    transaction_id TEXT, -- id de transacción del proveedor (ej: MercadoPago)
+    amount REAL NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
+);
+      `);
   return db;
 }

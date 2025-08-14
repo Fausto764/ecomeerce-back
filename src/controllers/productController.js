@@ -5,7 +5,7 @@ import {
   updateProduct,
   deleteProduct,
 } from "../models/productModel.js";
-
+import { getCategoryById } from "../models/categoryModel.js";
 // Obtener todos los productos
 export async function handleGetAllProducts(req, res) {
   try {
@@ -61,7 +61,7 @@ export async function handleCreateProduct(req, res) {
 
     // Validar que la categoría exista
     if (category_id) {
-      // const category = await getCategoryById(category_id); // modelo de categorías
+      const category = await getCategoryById(category_id); // modelo de categorías
       if (!category) {
         return res
           .status(400)

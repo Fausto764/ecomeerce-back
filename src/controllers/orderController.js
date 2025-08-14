@@ -4,55 +4,67 @@ import {
   getOrdersByUser,
   updateOrder,
   deleteOrder,
+  createOrderDetails,
+  reduceProductStock,
+  getCartItems,
+  clearCart,
 } from "../models/orderModel.js";
 
-import {
-  createOrderDetail,
-  getOrderDetailsByOrder,
-  updateOrderDetail,
-  deleteOrderDetail,
-} from "../models/orderDetailsModel.js";
+/* -------------------- CHECKOUT -------------------- */
 
-// Crear pedido
-export async function handleCreateOrder(req, res) {
+// Checkout: convierte el carrito en una orden real
+export async function handleCheckout(req, res) {
   try {
-    const { user_id, total_amount, details } = req.body;
+    const user_id = req.user.user_id; // obtenemos el user_id desde el token autenticado
+    const { payment_id } = req.body;
 
-    if (!user_id || !Array.isArray(details) || details.length === 0) {
-      return res
-        .status(400)
-        .json({ error: "Usuario y detalles del pedido son obligatorios" });
+    // 1️⃣ Obtener items del carrito
+    const items = await getCartItems(user_id);
+    if (!items.length) {
+      return res.status(400).json({ error: "El carrito está vacío" });
     }
 
-    if (isNaN(total_amount) || total_amount <= 0) {
-      return res.status(400).json({ error: "Total inválido" });
-    }
-
-    const order = await createOrder({ user_id, total_amount });
-
-    // Crear detalles
-    for (const item of details) {
-      const { product_id, quantity, price } = item;
-      if (!product_id || !quantity || !price || quantity <= 0 || price <= 0) {
-        return res.status(400).json({ error: "Detalle del pedido inválido" });
+    // 2️⃣ Validar stock
+    for (const item of items) {
+      if (item.quantity > item.stock) {
+        return res.status(400).json({
+          error: `Stock insuficiente para el producto ${item.product_id}`,
+        });
       }
-      await createOrderDetail({
-        order_id: order.order_id,
-        product_id,
-        quantity,
-        price,
-      });
     }
 
-    res
-      .status(201)
-      .json({ message: "Pedido creado", order_id: order.order_id });
+    // 3️⃣ Calcular total
+    const total_amount = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    // 4️⃣ Crear la orden
+    const { order_id } = await createOrder({
+      user_id,
+      total_amount,
+      payment_id,
+    });
+
+    // 5️⃣ Crear detalles de la orden
+    await createOrderDetails(order_id, items);
+
+    // 6️⃣ Reducir stock
+    for (const item of items) {
+      await reduceProductStock(item.product_id, item.quantity);
+    }
+
+    // 7️⃣ Vaciar carrito
+    await clearCart(user_id);
+
+    res.status(201).json({ message: "Orden creada con éxito", order_id });
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Error al crear pedido", details: error.message });
+    console.error("Error en checkout:", error);
+    res.status(500).json({ error: "Error al procesar el checkout" });
   }
 }
+
+/* -------------------- ORDENES -------------------- */
 
 // Obtener pedido por ID
 export async function handleGetOrderById(req, res) {
@@ -61,8 +73,8 @@ export async function handleGetOrderById(req, res) {
     const order = await getOrderById(order_id);
     if (!order) return res.status(404).json({ error: "Pedido no encontrado" });
 
-    const details = await getOrderDetailsByOrder(order_id);
-    res.json({ ...order, details });
+    // Para incluir detalles, si quieres, se pueden agregar
+    res.json(order);
   } catch (error) {
     res
       .status(500)

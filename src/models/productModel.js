@@ -73,3 +73,13 @@ export async function deleteProduct(product_id) {
   );
   return { changes: result.changes };
 }
+
+// obtener el stock de un producto
+
+export async function getProductStock(product_id) {
+  const db = await getDBConnection();
+  const product = await db.get("SELECT stock FROM products WHERE id = ?", [
+    product_id,
+  ]);
+  return product; // { stock: X } o undefined si no existe
+}
