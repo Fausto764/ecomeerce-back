@@ -42,3 +42,15 @@ export async function getPaymentsByOrder(order_id) {
     [order_id]
   );
 }
+//obtener pagos por id de transaccion, para validacion
+
+export async function getPaymentByTransactionId(transaction_id) {
+  const db = getDBConnection();
+  const result = db.run(
+    `
+    SELECT * FROM payments WHERE transaction_id = ?
+    `,
+    [transaction_id]
+  );
+  return result;
+}

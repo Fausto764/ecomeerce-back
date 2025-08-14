@@ -61,16 +61,20 @@ export async function deleteOrder(order_id) {
 // Crear detalles de la orden
 export async function createOrderDetails(order_id, items) {
   const db = await getDBConnection();
+  //db.prepare crea una consulta parametrizada (con ?) que se reutilizará varias veces, es mas rapido y seguro
   const stmt = await db.prepare(
     `INSERT INTO order_details(order_id, product_id, quantity, price)
      VALUES (?, ?, ?, ?)`
   );
 
   for (const item of items) {
+    //recorre la orden, por cada producto se inserta una fila con sus datos
     await stmt.run(order_id, item.product_id, item.quantity, item.price);
   }
   await stmt.finalize();
+  //cierra la consulta preparada y libera memoria
 }
+//---------HACER LUEGO DE QUE SE CONFIRME EL PAGO-------
 
 // Reducir stock del producto
 export async function reduceProductStock(product_id, quantity) {
@@ -81,12 +85,15 @@ export async function reduceProductStock(product_id, quantity) {
   ]);
 }
 
+//------------------------------------------------------------
+
 // Obtener items del carrito del usuario
 export async function getCartItems(user_id) {
   const db = await getDBConnection();
+  //hace un join que muestra la cantidad y producto del carrito junto a su precio y stock disponible por el id del usuario
   return db.all(
     `SELECT c.product_id, c.quantity, p.price, p.stock 
-     FROM cart c 
+     FROM cart_items c 
      JOIN products p ON c.product_id = p.product_id
      WHERE c.user_id = ?`,
     [user_id]
@@ -96,5 +103,5 @@ export async function getCartItems(user_id) {
 // Vaciar carrito del usuario
 export async function clearCart(user_id) {
   const db = await getDBConnection();
-  await db.run(`DELETE FROM cart WHERE user_id = ?`, [user_id]);
+  await db.run(`DELETE FROM cart_items WHERE user_id = ?`, [user_id]);
 }

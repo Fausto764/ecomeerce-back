@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post("/", authMiddleware, handleCreatePayment);
 router.put(
-  "/:id",
+  "/:payment_id",
   authMiddleware,
   roleMiddleware("admin"),
   handleUpdatePaymentStatus

@@ -2,6 +2,7 @@ import {
   createPayment,
   updatePaymentStatus,
   getPaymentsByOrder,
+  getPaymentByTransactionId,
 } from "../models/paymentModel.js";
 import { getOrderById, updateOrderStatus } from "../models/orderModel.js"; // Para actualizar el estado de la orden
 
@@ -10,7 +11,7 @@ export async function handleCreatePayment(req, res) {
   try {
     const { order_id, payment_method, amount, transaction_id } = req.body;
 
-    if (!order_id || !payment_method || !amount) {
+    if (!order_id || !payment_method || !amount || !transaction_id) {
       return res.status(400).json({ error: "Faltan campos requeridos" });
     }
 
@@ -18,7 +19,11 @@ export async function handleCreatePayment(req, res) {
     if (!order) {
       return res.status(404).json({ error: "La orden no existe" });
     }
-
+    //verifica que no haya duplicados
+    const existingPayment = await getPaymentByTransactionId(transaction_id);
+    if (existingPayment) {
+      return res.status(400).json({ error: "El pago ya fue registrado" });
+    }
     const payment = await createPayment({
       order_id,
       payment_method,

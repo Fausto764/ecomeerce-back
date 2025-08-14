@@ -10,7 +10,7 @@ import {
   clearCart,
 } from "../models/orderModel.js";
 
-/* -------------------- CHECKOUT -------------------- */
+//----CHECKOUT ------
 
 // Checkout: convierte el carrito en una orden real
 export async function handleCheckout(req, res) {
@@ -18,13 +18,13 @@ export async function handleCheckout(req, res) {
     const user_id = req.user.user_id; // obtenemos el user_id desde el token autenticado
     const { payment_id } = req.body;
 
-    // 1️⃣ Obtener items del carrito
+    // Obtener items del carrito
     const items = await getCartItems(user_id);
     if (!items.length) {
       return res.status(400).json({ error: "El carrito está vacío" });
     }
 
-    // 2️⃣ Validar stock
+    //  Validar stock
     for (const item of items) {
       if (item.quantity > item.stock) {
         return res.status(400).json({
@@ -33,28 +33,28 @@ export async function handleCheckout(req, res) {
       }
     }
 
-    // 3️⃣ Calcular total
+    //  Calcular total
     const total_amount = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
 
-    // 4️⃣ Crear la orden
+    //  Crear la orden
     const { order_id } = await createOrder({
       user_id,
       total_amount,
       payment_id,
     });
 
-    // 5️⃣ Crear detalles de la orden
+    //  Crear detalles de la orden
     await createOrderDetails(order_id, items);
 
-    // 6️⃣ Reducir stock
-    for (const item of items) {
-      await reduceProductStock(item.product_id, item.quantity);
-    }
+    //  Reducir stock --- HACER LUEGO DE QUE SE CONFIRME EL PAGO
+    // for (const item of items) {
+    //   await reduceProductStock(item.product_id, item.quantity);
+    // }
 
-    // 7️⃣ Vaciar carrito
+    //  Vaciar carrito
     await clearCart(user_id);
 
     res.status(201).json({ message: "Orden creada con éxito", order_id });
@@ -64,7 +64,7 @@ export async function handleCheckout(req, res) {
   }
 }
 
-/* -------------------- ORDENES -------------------- */
+//--------- ORDENES ----------
 
 // Obtener pedido por ID
 export async function handleGetOrderById(req, res) {
